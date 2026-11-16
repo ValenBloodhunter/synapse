@@ -58,10 +58,27 @@ def update_mastery(topic, concept, kind, result, task_id, note):
     record["attempts"] += 1
     record["last_reviewed_at"] = today
 
+
     if result == "success":
         record["successful_attempts"] += 1
+
+        # Require two independent successes after a failure
+        # before considering remediation complete.
+        if kind in ("independent", "transfer"):
+            count = record.get(
+                "independent_successes_since_failure", 0
+            ) + 1
+
+            record["independent_successes_since_failure"] = count
+
+            if count >= 2:
+                record["needs_remediation"] = False
+
     else:
         record["misconceptions"].append(note)
+        record["needs_remediation"] = True
+        record["independent_successes_since_failure"] = 0
+
 
     successful = [
         e for e in record["evidence"]
