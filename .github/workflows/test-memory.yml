@@ -173,3 +173,51 @@ jobs:
           print("PASS: Resume script did not modify state")
           PY
 
+
+      - name: Test unfinished lesson memory
+        shell: bash
+        run: |
+          set -euo pipefail
+          export HOME="$RUNNER_TEMP/unfinished-test"
+
+          # Initialize learner memory
+          python teachme/scripts/init_state.py machine-learning
+
+          # Save an unfinished lesson
+          python teachme/scripts/set_current_concept.py \
+            machine-learning backpropagation
+
+          # Verify state and resumption
+          python - <<'PY'
+          import json
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          path = Path.home() / "notes/machine-learning/.synapse/state.json"
+          state = json.loads(path.read_text())
+
+          assert state["current_concept_id"] == "backpropagation"
+          assert state["last_session_at"] is not None
+          assert state["concepts"] == {}
+
+          print("PASS: Unfinished lesson saved")
+
+          result = subprocess.run(
+              [sys.executable, "teachme/scripts/resume_state.py",
+               "machine-learning"],
+              capture_output=True,
+              text=True,
+              check=True
+          )
+
+          resumed = json.loads(result.stdout)
+
+          assert resumed["next_action"] == "continue"
+          assert resumed["current_concept"] == "backpropagation"
+
+          print("PASS: Unfinished lesson resumed")
+          print("PASS: No artificial mastery awarded")
+          PY
+
+
