@@ -1,9 +1,14 @@
 ---
-name: teachme
-description: Unified end-to-end learning, deep primary-source research, frontier grilling, Socratic teaching, and structured Markdown note-taking pipeline. Invoke with `/teachme <topic>` or when the user asks to deeply research, learn, build a study guide, generate Cornell notes, create Zettelkasten cards, or master any topic from first principles into a central vault (`~/notes/<topic-slug>/`).
+name: synapse
+description: >
+  Synapse is an adaptive AI learning system that transforms
+  complex subjects into structured, interactive mastery journeys.
+  It combines first-principles teaching, Socratic questioning,
+  active recall, spaced repetition, deep research, and persistent
+  learning memory to help users achieve lasting understanding.
 ---
 
-# Unified `/teachme` Master Pipeline
+# Synapse — Adaptive Learning & Mastery Engine
 
 When invoked as `/teachme <topic>` (or when the user asks to deeply research, learn, and take complete notes on a topic), execute this **6-Phase Stateful Pipeline** inside the user's **central knowledge vault** (`~/notes/<topic-slug>/`).
 
