@@ -7,7 +7,7 @@ import json
 import os
 import re
 import tempfile
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 
@@ -97,6 +97,54 @@ def update_mastery(topic, concept, kind, result, task_id, note):
 
     # Remember the most recently assessed concept.
     state["current_concept_id"] = concept
+
+
+    # Schedule spaced repetition based on mastery.
+    intervals = {
+        0: 1,
+        1: 1,
+        2: 3,
+        3: 7,
+        4: 14
+    }
+
+    days = (
+        1 if result == "failure"
+        else intervals[record["mastery"]]
+    )
+
+    due_at = (
+        datetime.now(timezone.utc).date()
+        + timedelta(days=days)
+    ).isoformat()
+
+    reviews = state.get("review_queue")
+
+    if not isinstance(reviews, list):
+        raise ValueError("Invalid review queue")
+
+    updated_queue = []
+    found = False
+
+    for item in reviews:
+        if not isinstance(item, dict):
+            raise ValueError("Invalid review entry")
+
+        if item.get("concept_id") == concept:
+            if not found:
+                updated_queue.append({**item, "due_at": due_at})
+                found = True
+        else:
+            updated_queue.append(item)
+
+    if not found:
+        updated_queue.append({
+            "concept_id": concept,
+            "due_at": due_at
+        })
+
+    state["review_queue"] = updated_queue
+    record["next_review_at"] = due_at
 
 
 
