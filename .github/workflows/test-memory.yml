@@ -100,3 +100,72 @@ jobs:
           fi
 
           echo "PASS: Duplicate assessment rejected"
+
+      - name: Test session resumption
+        shell: bash
+        run: |
+          set -euo pipefail
+          export HOME="$RUNNER_TEMP/resume-test"
+
+          python teachme/scripts/init_state.py machine-learning
+
+          python - <<'PY'
+          import json
+          import subprocess
+          import sys
+          from datetime import date, timedelta
+          from pathlib import Path
+
+          path = Path.home() / "notes/machine-learning/.synapse/state.json"
+          state = json.loads(path.read_text())
+
+          state["current_concept_id"] = "backpropagation"
+          state["concepts"]["chain-rule"] = {"mastery": 3}
+          state["review_queue"] = [
+              {
+                  "concept_id": "chain-rule",
+                  "due_at": (date.today() - timedelta(days=1)).isoformat()
+              },
+              {
+                  "concept_id": "gradients",
+                  "due_at": (date.today() + timedelta(days=7)).isoformat()
+              }
+          ]
+
+          def resume():
+              before = path.read_bytes()
+              result = subprocess.run(
+                  [sys.executable, "teachme/scripts/resume_state.py",
+                   "machine-learning"],
+                  capture_output=True,
+                  text=True,
+                  check=True
+              )
+              assert path.read_bytes() == before
+              return json.loads(result.stdout)
+
+          path.write_text(json.dumps(state), encoding="utf-8")
+
+          result = resume()
+          assert result["next_action"] == "review"
+          assert result["due_reviews"] == ["chain-rule"]
+          assert result["current_concept"] == "backpropagation"
+          assert result["mastery"]["chain-rule"] == 3
+          print("PASS: Due reviews detected correctly")
+
+          state["review_queue"] = []
+          path.write_text(json.dumps(state), encoding="utf-8")
+
+          result = resume()
+          assert result["next_action"] == "continue"
+          print("PASS: Existing lesson resumed")
+
+          state["current_concept_id"] = None
+          path.write_text(json.dumps(state), encoding="utf-8")
+
+          result = resume()
+          assert result["next_action"] == "select_concept"
+          print("PASS: New concept selection works")
+          print("PASS: Resume script did not modify state")
+          PY
+
