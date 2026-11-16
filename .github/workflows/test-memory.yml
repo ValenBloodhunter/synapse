@@ -221,3 +221,64 @@ jobs:
           PY
 
 
+      - name: Test spaced repetition scheduling
+        shell: bash
+        run: |
+          set -euo pipefail
+          export HOME="$RUNNER_TEMP/scheduler-test"
+
+          python teachme/scripts/init_state.py machine-learning
+
+          python teachme/scripts/update_mastery.py \
+            machine-learning chain-rule \
+            --kind guided --result success \
+            --task-id review-001 --note "Guided success"
+
+          python - <<'PY'
+          import json
+          from datetime import datetime, timedelta, timezone
+          from pathlib import Path
+
+          path = Path.home() / "notes/machine-learning/.synapse/state.json"
+          state = json.loads(path.read_text())
+          record = state["concepts"]["chain-rule"]
+
+          today = datetime.now(timezone.utc).date()
+          expected = (today + timedelta(days=3)).isoformat()
+
+          assert record["mastery"] == 2
+          assert record["next_review_at"] == expected
+          assert state["review_queue"] == [
+              {"concept_id": "chain-rule", "due_at": expected}
+          ]
+          print("PASS: M2 review scheduled after 3 days")
+          PY
+
+          python teachme/scripts/update_mastery.py \
+            machine-learning chain-rule \
+            --kind independent --result failure \
+            --task-id review-002 --note "Incorrect solution"
+
+          python - <<'PY'
+          import json
+          from datetime import datetime, timedelta, timezone
+          from pathlib import Path
+
+          path = Path.home() / "notes/machine-learning/.synapse/state.json"
+          state = json.loads(path.read_text())
+          record = state["concepts"]["chain-rule"]
+
+          expected = (
+              datetime.now(timezone.utc).date()
+              + timedelta(days=1)
+          ).isoformat()
+
+          assert record["next_review_at"] == expected
+          assert len(state["review_queue"]) == 1
+          assert state["review_queue"][0]["due_at"] == expected
+          assert record["attempts"] == 2
+
+          print("PASS: Failed assessment scheduled after 1 day")
+          print("PASS: No duplicate review entries")
+          PY
+
