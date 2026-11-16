@@ -92,7 +92,9 @@ def update_mastery(topic, concept, kind, result, task_id, note):
     if len(transfer) >= 2 and len(independent) >= 3:
         level = 4
 
-    record["mastery"] = max(record["mastery"], level)
+    # Remember the most recently assessed concept.
+    state["current_concept_id"] = concept
+
 
     # Save atomically to avoid partially written JSON.
     temp_path = None
