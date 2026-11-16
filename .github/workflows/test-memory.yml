@@ -88,6 +88,10 @@ jobs:
           assert record["attempts"] == 3
           assert record["successful_attempts"] == 3
 
+          assert state["current_concept_id"] == "chain-rule"
+          print("PASS: Current lesson remembered correctly")
+
+
           print("PASS: Mastery correctly reached M3")
           PY
 
