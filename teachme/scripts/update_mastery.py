@@ -108,10 +108,29 @@ def update_mastery(topic, concept, kind, result, task_id, note):
         4: 14
     }
 
+    
+    # Count successful study dates since the last failure.
+    # Multiple correct answers on one day count only once.
+    successful_days = set()
+
+    for attempt in reversed(record["evidence"]):
+        if attempt["result"] == "failure":
+            break
+
+        if attempt["result"] == "success":
+            successful_days.add(attempt["date"])
+
+    streak = len(successful_days)
+    record["retention_streak"] = streak
+
+    # Repeated successful sessions extend review intervals.
+    multiplier = 2 ** min(max(streak - 1, 0), 4)
+
     days = (
         1 if result == "failure"
-        else intervals[record["mastery"]]
+        else min(60, intervals[record["mastery"]] * multiplier)
     )
+
 
     due_at = (
         datetime.now(timezone.utc).date()
