@@ -53,3 +53,50 @@ jobs:
           assert state["concepts"]["chain-rule"]["mastery"] == 3
           print("PASS: Existing progress was preserved!")
           PY
+      - name: Test mastery tracking
+        shell: bash
+        run: |
+          set -euo pipefail
+          export HOME="$RUNNER_TEMP/mastery-test"
+
+          python teachme/scripts/init_state.py machine-learning
+
+          python teachme/scripts/update_mastery.py \
+            machine-learning chain-rule \
+            --kind guided --result success \
+            --task-id test-001 --note "Guided explanation"
+
+          python teachme/scripts/update_mastery.py \
+            machine-learning chain-rule \
+            --kind independent --result success \
+            --task-id test-002 --note "Independent solution"
+
+          python teachme/scripts/update_mastery.py \
+            machine-learning chain-rule \
+            --kind independent --result success \
+            --task-id test-003 --note "Second independent solution"
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path.home() / "notes/machine-learning/.synapse/state.json"
+          state = json.loads(path.read_text())
+          record = state["concepts"]["chain-rule"]
+
+          assert record["mastery"] == 3
+          assert record["attempts"] == 3
+          assert record["successful_attempts"] == 3
+
+          print("PASS: Mastery correctly reached M3")
+          PY
+
+          if python teachme/scripts/update_mastery.py \
+            machine-learning chain-rule \
+            --kind independent --result success \
+            --task-id test-003 --note "Duplicate"; then
+            echo "FAIL: Duplicate assessment accepted"
+            exit 1
+          fi
+
+          echo "PASS: Duplicate assessment rejected"
