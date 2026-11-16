@@ -62,13 +62,15 @@ cd synapse
 ### Quick Install Examples
 
 ```bash
-# Claude Code (Global)
-mkdir -p ~/.claude/skills/teachme && cp -r skills/teachme/* ~/.claude/skills/teachme/
+# Claude Code
+mkdir -p ~/.claude/skills/teachme
+cp -r teachme/* ~/.claude/skills/teachme/
 
-# Cursor (Global)
-mkdir -p ~/.cursor/skills/teachme && cp -r skills/teachme/* ~/.cursor/skills/teachme/
+# Cursor
+mkdir -p ~/.cursor/skills/teachme
+cp -r teachme/* ~/.cursor/skills/teachme/
 
-# Antigravity (Global)
+# Antigravity
 ./install.sh
 ```
 
