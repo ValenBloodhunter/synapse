@@ -96,9 +96,15 @@ Route any subcommand invocation directly to its dedicated workflow in `reference
 ## 6-Phase Execution Pipeline
 
 ### Phase 1: Frontier Grilling & Mission Lock (`references/MISSION-AND-GRILL.md`)
-1. Read `references/MISSION-AND-GRILL.md`.
-2. Unless `--auto` or `defaults` was passed, present **3-4 numbered `❓` questions** with `➡️` recommended defaults to calibrate baseline (ZPD), target outcome, scope boundaries, and raw seed material. Wait for the user's response.
-3. Once answered (or defaulted), create `~/notes/<topic-slug>/00-MISSION.md` with concrete success criteria and curriculum milestones.
+
+1. **Check Existing Progress:** Before beginning Frontier Grilling, check whether `~/notes/<topic-slug>/00-MISSION.md` already exists. If it exists, preserve the mission, load the learner's saved state, and resume the appropriate unfinished learning activity. Do not repeat onboarding questions.
+
+2. **Initialize New Learners:** If no saved mission exists, read `references/MISSION-AND-GRILL.md`. Unless `--auto` or `defaults` was provided, ask 3–4 calibrated questions to establish the learner's baseline, target outcome, scope boundaries, and available learning materials.
+
+3. **Save the Mission:** For new learners, create `00-MISSION.md` with observable success criteria and curriculum milestones. Never overwrite an existing mission without explicit user approval.
+
+4. **Resume Safely:** For returning learners, skip completed phases. If stored progress is missing or invalid, explain the issue and preserve existing files rather than silently restarting.
+
 
 ### Phase 2: Primary-Source Research Toolchain & Exhaustive Syllabus (`references/RESEARCH-TOOLCHAIN.md`)
 1. Read `references/RESEARCH-TOOLCHAIN.md`.
