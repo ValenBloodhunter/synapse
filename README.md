@@ -48,8 +48,8 @@ Every `/teachme <topic>` run creates and maintains a pure-Markdown vault inside 
 Clone this repository and copy `skills/teachme` into your AI tool's global or project-local skills directory:
 
 ```bash
-git clone https://github.com/<your-username>/teachme-skill.git
-cd teachme-skill
+git clone https://github.com/ValenBloodhunter/synapse.git
+cd synapse
 ```
 
 | Agent / Tool | Global Skills Path | Project-Local Path |
