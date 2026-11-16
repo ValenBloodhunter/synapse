@@ -282,3 +282,90 @@ jobs:
           print("PASS: No duplicate review entries")
           PY
 
+
+      - name: Test adaptive retention scheduling
+        shell: bash
+        run: |
+          set -euo pipefail
+          export HOME="$RUNNER_TEMP/retention-test"
+
+          python teachme/scripts/init_state.py machine-learning
+
+          # First successful study session
+          python teachme/scripts/update_mastery.py \
+            machine-learning chain-rule \
+            --kind guided --result success \
+            --task-id adaptive-001 --note "First success"
+
+          # Simulate the first session occurring yesterday
+          python - <<'PY'
+          import json
+          from datetime import datetime, timedelta, timezone
+          from pathlib import Path
+
+          path = Path.home() / "notes/machine-learning/.synapse/state.json"
+          state = json.loads(path.read_text())
+          record = state["concepts"]["chain-rule"]
+
+          yesterday = (
+              datetime.now(timezone.utc).date()
+              - timedelta(days=1)
+          ).isoformat()
+
+          record["evidence"][0]["date"] = yesterday
+          path.write_text(json.dumps(state), encoding="utf-8")
+          PY
+
+          # Second successful session on a different day
+          python teachme/scripts/update_mastery.py \
+            machine-learning chain-rule \
+            --kind guided --result success \
+            --task-id adaptive-002 --note "Second success"
+
+          python - <<'PY'
+          import json
+          from datetime import datetime, timedelta, timezone
+          from pathlib import Path
+
+          path = Path.home() / "notes/machine-learning/.synapse/state.json"
+          state = json.loads(path.read_text())
+          record = state["concepts"]["chain-rule"]
+
+          expected = (
+              datetime.now(timezone.utc).date()
+              + timedelta(days=6)
+          ).isoformat()
+
+          assert record["mastery"] == 2
+          assert record["retention_streak"] == 2
+          assert record["next_review_at"] == expected
+
+          print("PASS: Two successful dates produce 6-day interval")
+          PY
+
+          # A failure should reset the streak
+          python teachme/scripts/update_mastery.py \
+            machine-learning chain-rule \
+            --kind independent --result failure \
+            --task-id adaptive-003 --note "Incorrect answer"
+
+          python - <<'PY'
+          import json
+          from datetime import datetime, timedelta, timezone
+          from pathlib import Path
+
+          path = Path.home() / "notes/machine-learning/.synapse/state.json"
+          record = json.loads(path.read_text())["concepts"]["chain-rule"]
+
+          expected = (
+              datetime.now(timezone.utc).date()
+              + timedelta(days=1)
+          ).isoformat()
+
+          assert record["retention_streak"] == 0
+          assert record["next_review_at"] == expected
+
+          print("PASS: Failure resets retention streak")
+          print("PASS: Review rescheduled after 1 day")
+          PY
+
