@@ -25,7 +25,7 @@ jobs:
           set -euo pipefail
           export HOME="$RUNNER_TEMP/synapse-test"
 
-          python teachme/scripts/init_state.py machine-learning
+          python synapse/scripts/init_state.py machine-learning
 
           python - <<'PY'
           import json
@@ -41,7 +41,7 @@ jobs:
           p.write_text(json.dumps(state), encoding="utf-8")
           PY
 
-          python teachme/scripts/init_state.py machine-learning
+          python synapse/scripts/init_state.py machine-learning
 
           python - <<'PY'
           import json
@@ -59,19 +59,19 @@ jobs:
           set -euo pipefail
           export HOME="$RUNNER_TEMP/mastery-test"
 
-          python teachme/scripts/init_state.py machine-learning
+          python synapse/scripts/init_state.py machine-learning
 
-          python teachme/scripts/update_mastery.py \
+          python synapse/scripts/update_mastery.py \
             machine-learning chain-rule \
             --kind guided --result success \
             --task-id test-001 --note "Guided explanation"
 
-          python teachme/scripts/update_mastery.py \
+          python synapse/scripts/update_mastery.py \
             machine-learning chain-rule \
             --kind independent --result success \
             --task-id test-002 --note "Independent solution"
 
-          python teachme/scripts/update_mastery.py \
+          python synapse/scripts/update_mastery.py \
             machine-learning chain-rule \
             --kind independent --result success \
             --task-id test-003 --note "Second independent solution"
@@ -95,7 +95,7 @@ jobs:
           print("PASS: Mastery correctly reached M3")
           PY
 
-          if python teachme/scripts/update_mastery.py \
+          if python synapse/scripts/update_mastery.py \
             machine-learning chain-rule \
             --kind independent --result success \
             --task-id test-003 --note "Duplicate"; then
@@ -111,7 +111,7 @@ jobs:
           set -euo pipefail
           export HOME="$RUNNER_TEMP/resume-test"
 
-          python teachme/scripts/init_state.py machine-learning
+          python synapse/scripts/init_state.py machine-learning
 
           python - <<'PY'
           import json
@@ -139,7 +139,7 @@ jobs:
           def resume():
               before = path.read_bytes()
               result = subprocess.run(
-                  [sys.executable, "teachme/scripts/resume_state.py",
+                  [sys.executable, "synapse/scripts/resume_state.py",
                    "machine-learning"],
                   capture_output=True,
                   text=True,
@@ -181,10 +181,10 @@ jobs:
           export HOME="$RUNNER_TEMP/unfinished-test"
 
           # Initialize learner memory
-          python teachme/scripts/init_state.py machine-learning
+          python synapse/scripts/init_state.py machine-learning
 
           # Save an unfinished lesson
-          python teachme/scripts/set_current_concept.py \
+          python synapse/scripts/set_current_concept.py \
             machine-learning backpropagation
 
           # Verify state and resumption
@@ -204,7 +204,7 @@ jobs:
           print("PASS: Unfinished lesson saved")
 
           result = subprocess.run(
-              [sys.executable, "teachme/scripts/resume_state.py",
+              [sys.executable, "synapse/scripts/resume_state.py",
                "machine-learning"],
               capture_output=True,
               text=True,
@@ -227,9 +227,9 @@ jobs:
           set -euo pipefail
           export HOME="$RUNNER_TEMP/scheduler-test"
 
-          python teachme/scripts/init_state.py machine-learning
+          python synapse/scripts/init_state.py machine-learning
 
-          python teachme/scripts/update_mastery.py \
+          python synapse/scripts/update_mastery.py \
             machine-learning chain-rule \
             --kind guided --result success \
             --task-id review-001 --note "Guided success"
@@ -254,7 +254,7 @@ jobs:
           print("PASS: M2 review scheduled after 3 days")
           PY
 
-          python teachme/scripts/update_mastery.py \
+          python synapse/scripts/update_mastery.py \
             machine-learning chain-rule \
             --kind independent --result failure \
             --task-id review-002 --note "Incorrect solution"
@@ -289,10 +289,10 @@ jobs:
           set -euo pipefail
           export HOME="$RUNNER_TEMP/retention-test"
 
-          python teachme/scripts/init_state.py machine-learning
+          python synapse/scripts/init_state.py machine-learning
 
           # First successful study session
-          python teachme/scripts/update_mastery.py \
+          python synapse/scripts/update_mastery.py \
             machine-learning chain-rule \
             --kind guided --result success \
             --task-id adaptive-001 --note "First success"
@@ -317,7 +317,7 @@ jobs:
           PY
 
           # Second successful session on a different day
-          python teachme/scripts/update_mastery.py \
+          python synapse/scripts/update_mastery.py \
             machine-learning chain-rule \
             --kind guided --result success \
             --task-id adaptive-002 --note "Second success"
@@ -344,7 +344,7 @@ jobs:
           PY
 
           # A failure should reset the streak
-          python teachme/scripts/update_mastery.py \
+          python synapse/scripts/update_mastery.py \
             machine-learning chain-rule \
             --kind independent --result failure \
             --task-id adaptive-003 --note "Incorrect answer"
