@@ -1,0 +1,55 @@
+
+name: Synapse Memory Tests
+
+on:
+  push:
+    branches: [feature]
+  workflow_dispatch:
+
+jobs:
+  test-memory:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Test initialization and preservation
+        shell: bash
+        run: |
+          set -euo pipefail
+          export HOME="$RUNNER_TEMP/synapse-test"
+
+          python teachme/scripts/init_state.py machine-learning
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          p = Path.home() / "notes/machine-learning/.synapse/state.json"
+          state = json.loads(p.read_text())
+
+          assert state["schema_version"] == 1
+          assert state["topic_slug"] == "machine-learning"
+
+          state["concepts"]["chain-rule"] = {"mastery": 3}
+          p.write_text(json.dumps(state), encoding="utf-8")
+          PY
+
+          python teachme/scripts/init_state.py machine-learning
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          p = Path.home() / "notes/machine-learning/.synapse/state.json"
+          state = json.loads(p.read_text())
+
+          assert state["concepts"]["chain-rule"]["mastery"] == 3
+          print("PASS: Existing progress was preserved!")
+          PY
