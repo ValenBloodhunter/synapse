@@ -48,8 +48,8 @@ Every `/synapse <topic>` run creates and maintains a pure-Markdown vault inside 
 Clone this repository and copy `skills/synapse` into your AI tool's global or project-local skills directory:
 
 ```bash
-git clone https://github.com/<your-username>/synapse-skill.git
-cd synapse-skill
+git clone https://github.com/ValenBloodhunter/synapse.git
+cd synapse
 ```
 
 | Agent / Tool | Global Skills Path | Project-Local Path |
@@ -62,13 +62,17 @@ cd synapse-skill
 ### Quick Install Examples
 
 ```bash
+
 # Claude Code (Global)
-mkdir -p ~/.claude/skills/synapse && cp -r skills/synapse/* ~/.claude/skills/synapse/
+mkdir -p ~/.claude/skills/synapse
+cp -r synapse/* ~/.claude/skills/synapse/
 
 # Cursor (Global)
-mkdir -p ~/.cursor/skills/synapse && cp -r skills/synapse/* ~/.cursor/skills/synapse/
+mkdir -p ~/.cursor/skills/synapse
+cp -r synapse/* ~/.cursor/skills/synapse/
 
-# Antigravity (Global)
+
+# Antigravity
 ./install.sh
 ```
 

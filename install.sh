@@ -16,7 +16,9 @@ set -euo pipefail
 #   all          -> Installs globally for all supported agents above
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 SOURCE_DIR="$SCRIPT_DIR/synapse"
+
 
 if [ ! -d "$SOURCE_DIR" ]; then
   echo "Error: Could not find skill source directory at $SOURCE_DIR" >&2
