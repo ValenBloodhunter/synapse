@@ -30,13 +30,13 @@ Do NOT dump everything in a single wall of chat text. Write clean, pure Markdown
 10. **Persistent Learner Memory:** Read `references/LEARNER-STATE.md` before initializing, resuming, or reviewing a learning session. When filesystem access is available, load learner progress from `~/notes/<topic-slug>/.synapse/state.json`. If the file does not exist, initialize it using `assets/state.template.json`. Track mastery levels, assessment evidence, misconceptions, current concept, and scheduled reviews. Preserve existing progress and update state after assessments. Never claim progress was saved unless the write succeeds. If persistent storage is unavailable, explain the limitation and continue without claiming cross-session memory.
 11. **Automatic Mastery Persistence:** When filesystem and Python execution are available, use the bundled scripts to maintain learner progress.
 
+   - At session start, run `python3 <skill-root>/scripts/init_state.py <topic-slug>` to initialize or preserve existing memory.
    - After successful initialization, run `python3 <skill-root>/scripts/resume_state.py <topic-slug>` and parse its JSON output.
    - If `next_action` is `review`, prioritize concepts in `due_reviews` using unaided retrieval practice.
    - If `next_action` is `continue`, resume teaching from `current_concept` using its recorded mastery level.
    - If `next_action` is `select_concept`, choose the next appropriate concept from the prerequisite syllabus.
    - Never restart an existing learning curriculum unnecessarily.
    - If resumption fails, report the error and preserve existing state rather than resetting it.
-   - At session start, run `python3 <skill-root>/scripts/init_state.py <topic-slug>` to initialize or preserve existing memory.
    - After each graded assessment, evaluate the learner's actual reasoning and classify the attempt as `recognition`, `guided`, `independent`, or `transfer`.
    - Record the outcome using `python3 <skill-root>/scripts/update_mastery.py <topic-slug> <concept-id> --kind <kind> --result <success|failure> --task-id <unique-id> --note "<brief feedback>"`.
    - Generate a unique task ID for each assessment to prevent duplicate records.
