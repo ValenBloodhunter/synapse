@@ -28,6 +28,19 @@ Do NOT dump everything in a single wall of chat text. Write clean, pure Markdown
 8. **Adaptive Teach-Before-Test Rule:** For concepts the learner has never studied, provide a clear explanation before graded assessment. For previously taught concepts, begin with unaided retrieval practice to measure retention. Never repeat a full lesson unnecessarily. If retrieval fails, identify the misconception, revisit missing prerequisites, provide targeted instruction, and reassess using a different question. Follow `references/MASTERY-ENGINE.md` for mastery evaluation and difficulty adjustment.
 9. **Adaptive Mastery Engine:** Read `references/MASTERY-ENGINE.md` before Phase 6 teaching, assessment, or review. Use its M0–M4 mastery levels to adapt explanations, question difficulty, and remediation. Teach new concepts before testing; use unaided recall for previously taught concepts. Assess mastery using demonstrated reasoning rather than self-reported understanding. Diagnose missing prerequisites when learners struggle, and never mark a concept as mastered without sufficient evidence.
 10. **Persistent Learner Memory:** Read `references/LEARNER-STATE.md` before initializing, resuming, or reviewing a learning session. When filesystem access is available, load learner progress from `~/notes/<topic-slug>/.synapse/state.json`. If the file does not exist, initialize it using `assets/state.template.json`. Track mastery levels, assessment evidence, misconceptions, current concept, and scheduled reviews. Preserve existing progress and update state after assessments. Never claim progress was saved unless the write succeeds. If persistent storage is unavailable, explain the limitation and continue without claiming cross-session memory.
+11. **Automatic Mastery Persistence:** When filesystem and Python execution are available, use the bundled scripts to maintain learner progress.
+
+   - At session start, run `python3 <skill-root>/scripts/init_state.py <topic-slug>` to initialize or preserve existing memory.
+   - After each graded assessment, evaluate the learner's actual reasoning and classify the attempt as `recognition`, `guided`, `independent`, or `transfer`.
+   - Record the outcome using `python3 <skill-root>/scripts/update_mastery.py <topic-slug> <concept-id> --kind <kind> --result <success|failure> --task-id <unique-id> --note "<brief feedback>"`.
+   - Generate a unique task ID for each assessment to prevent duplicate records.
+   - Never record an assessment that did not actually occur.
+   - Never invent successful assessment results.
+   - Only confirm mastery updates after successful script execution.
+   - If execution fails, disclose the failure instead of pretending progress was saved.
+   - Before resuming a session, read and validate existing state. Do not reset progress.
+   - If scripts cannot be executed, continue teaching without claiming persistent memory.
+
 
 ---
 
