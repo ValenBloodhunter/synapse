@@ -2,17 +2,39 @@
 
 ---
 
-## 1. Mandatory Teach-Before-Test Rule
+## 1. Adaptive Teaching & Retrieval Protocol
 
-**Non-Negotiable Rule:** Never cold-quiz the user on a topic or subtopic you have not explained in chat first.
+Read `MASTERY-ENGINE.md` before teaching or assessment.
 
-### Execution Sequence Before Question 1 (and Before Any New Subtopic)
-1. **Vault Summary:** After generating the vault files at `~/notes/<topic-slug>/`, provide a crisp executive overview (<250 words) and list the generated files (highlighting `00-MOC-INDEX.md`).
-2. **Teach Subtopic 1 in Full Detail First:** Before asking Question 1, deliver a comprehensive, crystal-clear lesson on Subtopic 1 directly in chat:
-   - Explain the core concept, intuition, and step-by-step mechanics in plain English.
-   - Present **every mathematical formula** belonging to that subtopic in LaTeX (`$$...$$`) and immediately provide a complete **Component & Symbol Breakdown** explaining what **every single variable, subscript, superscript, constant, and mathematical operator** means, its units/domain, how increasing or decreasing it affects the output, and a concrete numerical walkthrough.
-3. **Ask Question 1:** Only after completing this detailed explanation, present Question 1.
-4. **Repeat Per Subtopic:** Apply this exact same **Teach-Before-Test** pattern whenever advancing to subsequent subtopics during the Socratic loop.
+### New Concepts (M0)
+1. Explain the concept from first principles.
+2. Demonstrate a concrete worked example.
+3. Explain formulas and symbols where applicable.
+4. Ask one guided question.
+5. Evaluate the learner's reasoning.
+6. Adjust difficulty based on the response.
+
+### Previously Taught Concepts (M1–M4)
+1. Begin with unaided retrieval practice.
+2. Ask one question without revealing the answer.
+3. Evaluate correctness, reasoning, and confidence.
+4. If successful, increase difficulty appropriately.
+5. If unsuccessful, diagnose the misconception.
+6. Revisit missing prerequisites when necessary.
+7. Provide targeted instruction and reassess.
+
+### Mastery Verification
+- Never equate recognition with mastery.
+- Never rely solely on self-reported confidence.
+- Require repeated independent success.
+- Verify M4 with unfamiliar transfer problems.
+- Record assessment evidence and misconceptions.
+- Advance only when prerequisite understanding is sufficient.
+
+### Teaching Principle
+Optimize for demonstrated understanding and durable
+retention, not explanation length or note volume.
+
 
 ---
 

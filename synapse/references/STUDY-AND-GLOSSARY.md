@@ -277,12 +277,12 @@ Create `~/notes/<topic-slug>/00-MOC-INDEX.md` as the central navigation dashboar
 - [[06-DERIVATIONS-AND-PROOFS]] — Step-by-step axiom-to-formula derivations
 - [[07-PRACTICE-PROBLEMS]] — Applied problem sets & scenarios (if generated)
 - [[08-FLASHCARDS]] — Spaced-repetition & cloze active-recall deck
-- [[09-CHEAT-SHEET]] — Distilled 1-page executive cheat sheet (via `/teachme distill`)
+- [[09-CHEAT-SHEET]] — Distilled 1-page executive cheat sheet (via `/synapse distill`)
 
 ---
 
 ## Comparisons
-- <Cross-vault comparisons linked here automatically by `/teachme compare`, e.g. `[[../comparisons/<topic-a>-vs-<topic-b>]]`>
+- <Cross-vault comparisons linked here automatically by `/synapse compare`, e.g. `[[../comparisons/<topic-a>-vs-<topic-b>]]`>
 
 ---
 

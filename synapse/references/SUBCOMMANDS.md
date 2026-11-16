@@ -6,7 +6,7 @@ When invoked with a subcommand, execute its dedicated workflow directly without 
 
 ## A. Ingestion & Source-Driven Commands
 
-### 1. `/teachme ingest <path-or-url> into <topic>` (Source Ingestion & Merge)
+### 1. `/synapse ingest <path-or-url> into <topic>` (Source Ingestion & Merge)
 
 1. **Read Existing Vault First:** Load `00-MOC-INDEX.md`, `01-RESOURCES.md`, `02-DEEP-RESEARCH.md`, and `04-GLOSSARY.md` inside `~/notes/<topic-slug>/`. If the vault does not exist yet, initialize it first (using Phase 1 defaults if `--auto` or after a quick Mission Lock).
 2. **Extract & Verify:** Parse the provided local file (PDF, lecture notes, code, transcript) or URL (research paper, YouTube transcript, GitHub repository, official docs). Extract every new claim, mechanism, benchmark, and mathematical equation with inline `[Source]` citations.
@@ -29,7 +29,7 @@ When invoked with a subcommand, execute its dedicated workflow directly without 
 
 ---
 
-### 2. `/teachme distill <topic>` (Executive Cheat Sheet)
+### 2. `/synapse distill <topic>` (Executive Cheat Sheet)
 
 1. **Read Full Vault:** Scan `00-MOC-INDEX.md`, `02-DEEP-RESEARCH.md`, `03-CORNELL-STUDY-GUIDE.md`, `04-GLOSSARY.md`, `05-MENTAL-MODELS.md`, and `topics/*.md` inside `~/notes/<topic-slug>/`.
 2. **Generate `~/notes/<topic-slug>/09-CHEAT-SHEET.md`:** Compress the entire topic into a high-density, single-page last-minute review sheet containing ONLY these 4 sections:
@@ -65,7 +65,7 @@ When invoked with a subcommand, execute its dedicated workflow directly without 
 
 ## B. Retention & Active-Recall Commands
 
-### 3. `/teachme review <topic>` (Spaced-Repetition Quiz)
+### 3. `/synapse review <topic>` (Spaced-Repetition Quiz)
 
 1. **Scan State (Read-Only on Notes):** Read `00-MOC-INDEX.md` (looking for unchecked `- [ ]` subtopics), `learning-records/` (looking for past misconceptions or `superseded` records), and `08-FLASHCARDS.md`. Do NOT regenerate or overwrite existing vault notes.
 2. **Teach-Before-Test & ZPD Quiz:** Briefly recap the weakest or next unchecked subtopic in topological order—including plain-English mechanics and a full component breakdown of any formulas involved—then run a targeted spaced-repetition Socratic quiz **one question at a time** (respecting Beginner-Safe 1-number scalar traces for `0 knowledge` / `Beginner` baselines).
@@ -73,7 +73,7 @@ When invoked with a subcommand, execute its dedicated workflow directly without 
 
 ---
 
-### 4. `/teachme feynman <topic> [subtopic]` (Reverse-Teaching Audit)
+### 4. `/synapse feynman <topic> [subtopic]` (Reverse-Teaching Audit)
 
 1. **Role Reversal:** Pick the specified `[subtopic]` (or the next unchecked subtopic in `00-MOC-INDEX.md`) and prompt the user to explain the concept—and its core formula(s)—from scratch in plain English as if teaching a complete beginner.
 2. **Strict 4-Axis Grading Rubric:** Wait for the user's explanation, then evaluate it across:
@@ -85,7 +85,7 @@ When invoked with a subcommand, execute its dedicated workflow directly without 
 
 ---
 
-### 5. `/teachme drill <topic> [--tier 1|2|3]` (Problem Generator & Grader)
+### 5. `/synapse drill <topic> [--tier 1|2|3]` (Problem Generator & Grader)
 
 1. **Read Existing Problems:** Check `~/notes/<topic-slug>/07-PRACTICE-PROBLEMS.md` (if it exists) so no duplicate problems are generated.
 2. **Generate Fresh Problems:** Create 1–3 new quantitative or diagnostic problems calibrated to the requested tier (defaulting to the user's current ZPD tier if `--tier` is omitted):
@@ -107,7 +107,7 @@ When invoked with a subcommand, execute its dedicated workflow directly without 
 
 ## C. Synthesis & Applied Mastery Commands
 
-### 6. `/teachme compare <topic-a> vs <topic-b>` (Cross-Vault Synthesis)
+### 6. `/synapse compare <topic-a> vs <topic-b>` (Cross-Vault Synthesis)
 
 1. **Cross-Vault & Primary-Source Lookup:** Check if `~/notes/<topic-a-slug>/` and `~/notes/<topic-b-slug>/` already exist in the central vault. For whichever vault is missing, run targeted primary-source research (Phase 2) first so all claims are grounded.
 2. **Generate `~/notes/comparisons/<topic-a-slug>-vs-<topic-b-slug>.md`:**
@@ -142,7 +142,7 @@ When invoked with a subcommand, execute its dedicated workflow directly without 
 
 ---
 
-### 7. `/teachme audit <topic>` (Vault Integrity & Repair)
+### 7. `/synapse audit <topic>` (Vault Integrity & Repair)
 
 1. **Comprehensive Vault Inspection:** Scan every file inside `~/notes/<topic-slug>/` and check:
    1. **Subtopic Completeness:** Every subtopic listed in `00-MOC-INDEX.md` and `03-CORNELL-STUDY-GUIDE.md` has a corresponding, non-empty `topics/<nn>-<subtopic-slug>.md` file.

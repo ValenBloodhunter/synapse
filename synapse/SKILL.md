@@ -1,11 +1,16 @@
 ---
-name: teachme
-description: Unified end-to-end learning, deep primary-source research, frontier grilling, Socratic teaching, and structured Markdown note-taking pipeline. Invoke with `/teachme <topic>` or when the user asks to deeply research, learn, build a study guide, generate Cornell notes, create Zettelkasten cards, or master any topic from first principles into a central vault (`~/notes/<topic-slug>/`).
+name: synapse
+description: >
+  Synapse is an adaptive AI learning system that transforms
+  complex subjects into structured, interactive mastery journeys.
+  It combines first-principles teaching, Socratic questioning,
+  active recall, spaced repetition, deep research, and persistent
+  learning memory to help users achieve lasting understanding.
 ---
 
-# Unified `/teachme` Master Pipeline
+# Synapse — Adaptive Learning & Mastery Engine
 
-When invoked as `/teachme <topic>` (or when the user asks to deeply research, learn, and take complete notes on a topic), execute this **6-Phase Stateful Pipeline** inside the user's **central knowledge vault** (`~/notes/<topic-slug>/`).
+When invoked as `/synapse <topic>` (or when the user asks to deeply research, learn, and take complete notes on a topic), execute this **6-Phase Stateful Pipeline** inside the user's **central knowledge vault** (`~/notes/<topic-slug>/`).
 
 Do NOT dump everything in a single wall of chat text. Write clean, pure Markdown files into `~/notes/<topic-slug>/` while guiding the user interactively in chat.
 
@@ -14,8 +19,8 @@ Do NOT dump everything in a single wall of chat text. Write clean, pure Markdown
 ## Non-Negotiable Operating Laws
 
 1. **Central Vault Only:** Always write all generated files to `~/notes/<topic-slug>/` (expanding `~` to the user's home directory), regardless of which workspace is currently open. Never scatter notes inside random project folders.
-2. **Always Start with Frontier Grilling:** Every new `/teachme <topic>` session MUST begin with Phase 1 (Frontier Grilling Round with `❓` questions and `➡️` defaults) before running research—unless the user explicitly passes `--auto` or replies `"auto"` / `"defaults"`.
-3. **Pure Markdown Output:** Produce 100% pure Markdown (`.md`) files across the entire vault (no HTML wrappers, no PDFs). Keep formatting clean for Obsidian, Git, and standard Markdown viewers.
+2. **Adaptive Session Initialization:** Before starting a learning session, check whether the topic already has an existing learning vault and saved mission. For a new topic, begin with Phase 1 Frontier Grilling (3–4 calibrated questions), unless the user passes `--auto` or requests defaults. For an existing topic, preserve the previous mission and use the Persistent Learner Memory protocol to resume from saved progress. Skip completed research and note-generation phases unless the user explicitly requests regeneration or a mission change. If the existing vault is incomplete, resume only the unfinished phases. Never unnecessarily restart the curriculum or overwrite existing learning progress.
+3. **Markdown Notes & Persistent Learning State:** Keep all human-readable study notes in pure Markdown (`.md`) for compatibility with Obsidian and Git. Permit one machine-readable JSON file at `~/notes/<topic-slug>/.synapse/state.json` to store learner progress, mastery levels, assessment evidence, misconceptions, current position, and review schedules. Create the state file only when filesystem access is available. Never overwrite existing learning state without reading and preserving prior progress. Do not store passwords, credentials, or unnecessary personal information.
 4. **Never Trust Parametric Knowledge Alone:** Treat pre-trained knowledge as untrusted until grounded in primary sources during Phase 2.
 5. **Progressive Reference Loading:** Read the supporting reference files in `references/` at the exact phase or subcommand they govern so instructions stay crisp and complete:
    - Phase 1: `references/MISSION-AND-GRILL.md`
@@ -25,7 +30,28 @@ Do NOT dump everything in a single wall of chat text. Write clean, pure Markdown
    - Subcommands (`ingest`, `distill`, `review`, `feynman`, `drill`, `compare`, `audit`): `references/SUBCOMMANDS.md`
 6. **Exhaustive Subtopic Coverage (1 Topic / Subtopic = 1 Dedicated `.md` File, No Caps):** Never compress, merge, or skip subtopics or cards to save space. Decompose the subject into an exhaustive syllabus in Phase 2, and generate a full-length, standalone `topics/<nn>-<subtopic-slug>.md` file for **every single topic and subtopic** in that syllabus, plus as many `atomic/` Zettelkasten cards as needed for full mastery.
 7. **Zero Black-Box Formulas (Mandatory Formula Anatomy Breakdown):** Across `02-DEEP-RESEARCH.md`, `03-CORNELL-STUDY-GUIDE.md`, and every `topics/<nn>-<subtopic-slug>.md` file, **no mathematical formula, equation, recurrence, objective/loss function, or complexity bound** may appear without an immediate **Formula Anatomy Breakdown** (display LaTeX `$$...$$`, Plain-English Intuition, complete Component & Operator Breakdown Table, Boundary & Limiting Cases, and Worked Numerical Walkthrough).
-8. **Mandatory Teach-Before-Test Rule:** Never cold-quiz the user on a topic or subtopic you have not explained in chat first. Always deliver a full, plain-English lesson (including every formula and its complete Component & Symbol Breakdown) before asking Question 1 or advancing to any new subtopic.
+8. **Adaptive Teach-Before-Test Rule:** For concepts the learner has never studied, provide a clear explanation before graded assessment. For previously taught concepts, begin with unaided retrieval practice to measure retention. Never repeat a full lesson unnecessarily. If retrieval fails, identify the misconception, revisit missing prerequisites, provide targeted instruction, and reassess using a different question. Follow `references/MASTERY-ENGINE.md` for mastery evaluation and difficulty adjustment.
+9. **Adaptive Mastery Engine:** Read `references/MASTERY-ENGINE.md` before Phase 6 teaching, assessment, or review. Use its M0–M4 mastery levels to adapt explanations, question difficulty, and remediation. Teach new concepts before testing; use unaided recall for previously taught concepts. Assess mastery using demonstrated reasoning rather than self-reported understanding. Diagnose missing prerequisites when learners struggle, and never mark a concept as mastered without sufficient evidence.
+10. **Persistent Learner Memory:** Read `references/LEARNER-STATE.md` before initializing, resuming, or reviewing a learning session. When filesystem access is available, load learner progress from `~/notes/<topic-slug>/.synapse/state.json`. If the file does not exist, initialize it using `assets/state.template.json`. Track mastery levels, assessment evidence, misconceptions, current concept, and scheduled reviews. Preserve existing progress and update state after assessments. Never claim progress was saved unless the write succeeds. If persistent storage is unavailable, explain the limitation and continue without claiming cross-session memory.
+11. **Automatic Mastery Persistence:** When filesystem and Python execution are available, use the bundled scripts to maintain learner progress.
+
+   - At session start, run `python3 <skill-root>/scripts/init_state.py <topic-slug>` to initialize or preserve existing memory.
+   - After successful initialization, run `python3 <skill-root>/scripts/resume_state.py <topic-slug>` and parse its JSON output.
+   - If `next_action` is `review`, prioritize concepts in `due_reviews` using unaided retrieval practice.
+   - If `next_action` is `continue`, resume teaching from `current_concept` using its recorded mastery level.
+   - If `next_action` is `select_concept`, choose the next appropriate concept from the prerequisite syllabus.
+   - Never restart an existing learning curriculum unnecessarily.
+   - If resumption fails, report the error and preserve existing state rather than resetting it.
+   - After each graded assessment, evaluate the learner's actual reasoning and classify the attempt as `recognition`, `guided`, `independent`, or `transfer`.
+   - Record the outcome using `python3 <skill-root>/scripts/update_mastery.py <topic-slug> <concept-id> --kind <kind> --result <success|failure> --task-id <unique-id> --note "<brief feedback>"`.
+   - Generate a unique task ID for each assessment to prevent duplicate records.
+   - Never record an assessment that did not actually occur.
+   - Never invent successful assessment results.
+   - Only confirm mastery updates after successful script execution.
+   - If execution fails, disclose the failure instead of pretending progress was saved.
+   - Before resuming a session, read and validate existing state. Do not reset progress.
+   - If scripts cannot be executed, continue teaching without claiming persistent memory.
+
 
 ---
 
@@ -45,7 +71,7 @@ For any `<topic>`, create and maintain this exact directory tree at `~/notes/<to
 ├── 06-DERIVATIONS-AND-PROOFS.md   # Step-by-step axiom-to-formula derivations with justifications
 ├── 07-PRACTICE-PROBLEMS.md        # Tiered quantitative/diagnostic drill problems & solutions
 ├── 08-FLASHCARDS.md               # Obsidian Spaced Repetition & Anki active-recall + cloze deck
-├── 09-CHEAT-SHEET.md              # Distilled 1-page review sheet (/teachme distill)
+├── 09-CHEAT-SHEET.md              # Distilled 1-page review sheet (/synapse distill)
 ├── topics/                        # 01-<subtopic-slug>.md ... 1 dedicated full deep-dive per subtopic (no cap)
 ├── learning-records/              # 000N-<slug>.md ADR-style mastery & misconception logs
 └── atomic/                        # Interlinked 150-300 word Zettelkasten cards with [[wikilinks]] (no arbitrary cap)
@@ -60,24 +86,30 @@ Route any subcommand invocation directly to its dedicated workflow in `reference
 
 | Invocation | Mode | Target Path |
 |---|---|---|
-| `/teachme <topic>` | **Full Pipeline** | `~/notes/<topic-slug>/` (Runs Phases 1–6, starting with Frontier Grilling) |
-| `/teachme <topic> --auto` | **Fast-Track Pipeline** | `~/notes/<topic-slug>/` (Skips Phase 1 grilling with defaults; runs Phases 2–6) |
-| `/teachme ingest <path-or-url> into <topic>` | **Source Ingestion & Merge** | `~/notes/<topic-slug>/` |
-| `/teachme distill <topic>` | **Executive Cheat Sheet** | `~/notes/<topic-slug>/09-CHEAT-SHEET.md` |
-| `/teachme review <topic>` | **Spaced-Repetition Quiz** | `~/notes/<topic-slug>/` |
-| `/teachme feynman <topic> [subtopic]` | **Reverse-Teaching Audit** | `~/notes/<topic-slug>/` |
-| `/teachme drill <topic> [--tier 1\|2\|3]` | **Problem Generator & Grader** | `~/notes/<topic-slug>/07-PRACTICE-PROBLEMS.md` |
-| `/teachme compare <topic-a> vs <topic-b>` | **Cross-Vault Synthesis** | `~/notes/comparisons/<a-vs-b>.md` |
-| `/teachme audit <topic>` | **Vault Integrity & Repair** | `~/notes/<topic-slug>/` |
+| `/synapse <topic>` | **Full Pipeline** | `~/notes/<topic-slug>/` (Runs Phases 1–6, starting with Frontier Grilling) |
+| `/synapse <topic> --auto` | **Fast-Track Pipeline** | `~/notes/<topic-slug>/` (Skips Phase 1 grilling with defaults; runs Phases 2–6) |
+| `/synapse ingest <path-or-url> into <topic>` | **Source Ingestion & Merge** | `~/notes/<topic-slug>/` |
+| `/synapse distill <topic>` | **Executive Cheat Sheet** | `~/notes/<topic-slug>/09-CHEAT-SHEET.md` |
+| `/synapse review <topic>` | **Spaced-Repetition Quiz** | `~/notes/<topic-slug>/` |
+| `/synapse feynman <topic> [subtopic]` | **Reverse-Teaching Audit** | `~/notes/<topic-slug>/` |
+| `/synapse drill <topic> [--tier 1\|2\|3]` | **Problem Generator & Grader** | `~/notes/<topic-slug>/07-PRACTICE-PROBLEMS.md` |
+| `/synapse compare <topic-a> vs <topic-b>` | **Cross-Vault Synthesis** | `~/notes/comparisons/<a-vs-b>.md` |
+| `/synapse audit <topic>` | **Vault Integrity & Repair** | `~/notes/<topic-slug>/` |
 
 ---
 
 ## 6-Phase Execution Pipeline
 
 ### Phase 1: Frontier Grilling & Mission Lock (`references/MISSION-AND-GRILL.md`)
-1. Read `references/MISSION-AND-GRILL.md`.
-2. Unless `--auto` or `defaults` was passed, present **3-4 numbered `❓` questions** with `➡️` recommended defaults to calibrate baseline (ZPD), target outcome, scope boundaries, and raw seed material. Wait for the user's response.
-3. Once answered (or defaulted), create `~/notes/<topic-slug>/00-MISSION.md` with concrete success criteria and curriculum milestones.
+
+1. **Check Existing Progress:** Before beginning Frontier Grilling, check whether `~/notes/<topic-slug>/00-MISSION.md` already exists. If it exists, preserve the mission, load the learner's saved state, and resume the appropriate unfinished learning activity. Do not repeat onboarding questions.
+
+2. **Initialize New Learners:** If no saved mission exists, read `references/MISSION-AND-GRILL.md`. Unless `--auto` or `defaults` was provided, ask 3–4 calibrated questions to establish the learner's baseline, target outcome, scope boundaries, and available learning materials.
+
+3. **Save the Mission:** For new learners, create `00-MISSION.md` with observable success criteria and curriculum milestones. Never overwrite an existing mission without explicit user approval.
+
+4. **Resume Safely:** For returning learners, skip completed phases. If stored progress is missing or invalid, explain the issue and preserve existing files rather than silently restarting.
+
 
 ### Phase 2: Primary-Source Research Toolchain & Exhaustive Syllabus (`references/RESEARCH-TOOLCHAIN.md`)
 1. Read `references/RESEARCH-TOOLCHAIN.md`.
@@ -108,7 +140,8 @@ Route any subcommand invocation directly to its dedicated workflow in `reference
 ### Phase 6: Teach-Before-Test Socratic Loop & Learning Records (`references/RETENTION-AND-RECORDS.md`)
 1. Read `references/RETENTION-AND-RECORDS.md`.
 2. Present a crisp executive summary (<250 words) in chat and list all created vault files (highlighting `00-MOC-INDEX.md` and `topics/*.md`).
-3. **Teach Subtopic 1 in Full Detail First:** Deliver a crystal-clear lesson on Subtopic 1 directly in chat—plain-English intuition, step-by-step mechanics, and every formula in `$$...$$` with a complete Component & Symbol Breakdown and numerical walkthrough—**before** asking Question 1. Repeat this Teach-Before-Test pattern for every subsequent subtopic.
+3. **Adaptive Teaching & Assessment:** Read `references/MASTERY-ENGINE.md` and follow the adaptive protocol in `references/RETENTION-AND-RECORDS.md`. For new concepts (M0), teach from first principles using clear explanations, worked examples, and formula breakdowns before asking a guided question. For previously taught concepts (M1–M4), begin with unaided retrieval practice. Evaluate reasoning, adapt difficulty, diagnose misconceptions, and revisit missing prerequisites as needed. Ask one question at a time and require demonstrated evidence before advancing mastery.
+   - **Automatic Lesson Position Tracking:** Before beginning or switching to any concept, save the active lesson by running `python3 <skill-root>/scripts/set_current_concept.py <topic-slug> <concept-id>` when filesystem and Python execution are available. Use stable concept IDs from the syllabus. Run this before the first explanation or assessment so unfinished lessons can be resumed. Preserve existing mastery and review data. If the script fails, report the failure and continue teaching without claiming the lesson position was saved.
 4. **Calibrate Question 1 to Baseline:** For `0 knowledge` / `Beginner` baselines in `00-MISSION.md`, start Question 1 with a concrete **1-number scalar trace** before any 2D geometry, vectors/matrices, or multi-variable edge cases. For `Intermediate` / `Advanced`, start with a targeted diagnostic or failure-mode prediction.
 5. Honor the inline `wait-what` / `simplify` protocol immediately if the user hits friction—re-pitch from scratch using `04-GLOSSARY.md` terms and a 1-number trace, and append the clearer explanation to `05-MENTAL-MODELS.md`.
 6. Check off mastered subtopics (`- [x]`) in `00-MOC-INDEX.md`, log breakthroughs/misconceptions/mission shifts in `learning-records/000N-<slug>.md` (`Status: active` or `superseded by LR-000N`), and append user insights to `03-CORNELL-STUDY-GUIDE.md` (`## Living Session Notes & Insights`) and `04-GLOSSARY.md`.

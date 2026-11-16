@@ -1,0 +1,371 @@
+
+name: Synapse Memory Tests
+
+on:
+  push:
+    branches: [feature]
+  workflow_dispatch:
+
+jobs:
+  test-memory:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Test initialization and preservation
+        shell: bash
+        run: |
+          set -euo pipefail
+          export HOME="$RUNNER_TEMP/synapse-test"
+
+          python synapse/scripts/init_state.py machine-learning
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          p = Path.home() / "notes/machine-learning/.synapse/state.json"
+          state = json.loads(p.read_text())
+
+          assert state["schema_version"] == 1
+          assert state["topic_slug"] == "machine-learning"
+
+          state["concepts"]["chain-rule"] = {"mastery": 3}
+          p.write_text(json.dumps(state), encoding="utf-8")
+          PY
+
+          python synapse/scripts/init_state.py machine-learning
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          p = Path.home() / "notes/machine-learning/.synapse/state.json"
+          state = json.loads(p.read_text())
+
+          assert state["concepts"]["chain-rule"]["mastery"] == 3
+          print("PASS: Existing progress was preserved!")
+          PY
+      - name: Test mastery tracking
+        shell: bash
+        run: |
+          set -euo pipefail
+          export HOME="$RUNNER_TEMP/mastery-test"
+
+          python synapse/scripts/init_state.py machine-learning
+
+          python synapse/scripts/update_mastery.py \
+            machine-learning chain-rule \
+            --kind guided --result success \
+            --task-id test-001 --note "Guided explanation"
+
+          python synapse/scripts/update_mastery.py \
+            machine-learning chain-rule \
+            --kind independent --result success \
+            --task-id test-002 --note "Independent solution"
+
+          python synapse/scripts/update_mastery.py \
+            machine-learning chain-rule \
+            --kind independent --result success \
+            --task-id test-003 --note "Second independent solution"
+
+          python - <<'PY'
+          import json
+          from pathlib import Path
+
+          path = Path.home() / "notes/machine-learning/.synapse/state.json"
+          state = json.loads(path.read_text())
+          record = state["concepts"]["chain-rule"]
+
+          assert record["mastery"] == 3
+          assert record["attempts"] == 3
+          assert record["successful_attempts"] == 3
+
+          assert state["current_concept_id"] == "chain-rule"
+          print("PASS: Current lesson remembered correctly")
+
+
+          print("PASS: Mastery correctly reached M3")
+          PY
+
+          if python synapse/scripts/update_mastery.py \
+            machine-learning chain-rule \
+            --kind independent --result success \
+            --task-id test-003 --note "Duplicate"; then
+            echo "FAIL: Duplicate assessment accepted"
+            exit 1
+          fi
+
+          echo "PASS: Duplicate assessment rejected"
+
+      - name: Test session resumption
+        shell: bash
+        run: |
+          set -euo pipefail
+          export HOME="$RUNNER_TEMP/resume-test"
+
+          python synapse/scripts/init_state.py machine-learning
+
+          python - <<'PY'
+          import json
+          import subprocess
+          import sys
+          from datetime import date, timedelta
+          from pathlib import Path
+
+          path = Path.home() / "notes/machine-learning/.synapse/state.json"
+          state = json.loads(path.read_text())
+
+          state["current_concept_id"] = "backpropagation"
+          state["concepts"]["chain-rule"] = {"mastery": 3}
+          state["review_queue"] = [
+              {
+                  "concept_id": "chain-rule",
+                  "due_at": (date.today() - timedelta(days=1)).isoformat()
+              },
+              {
+                  "concept_id": "gradients",
+                  "due_at": (date.today() + timedelta(days=7)).isoformat()
+              }
+          ]
+
+          def resume():
+              before = path.read_bytes()
+              result = subprocess.run(
+                  [sys.executable, "synapse/scripts/resume_state.py",
+                   "machine-learning"],
+                  capture_output=True,
+                  text=True,
+                  check=True
+              )
+              assert path.read_bytes() == before
+              return json.loads(result.stdout)
+
+          path.write_text(json.dumps(state), encoding="utf-8")
+
+          result = resume()
+          assert result["next_action"] == "review"
+          assert result["due_reviews"] == ["chain-rule"]
+          assert result["current_concept"] == "backpropagation"
+          assert result["mastery"]["chain-rule"] == 3
+          print("PASS: Due reviews detected correctly")
+
+          state["review_queue"] = []
+          path.write_text(json.dumps(state), encoding="utf-8")
+
+          result = resume()
+          assert result["next_action"] == "continue"
+          print("PASS: Existing lesson resumed")
+
+          state["current_concept_id"] = None
+          path.write_text(json.dumps(state), encoding="utf-8")
+
+          result = resume()
+          assert result["next_action"] == "select_concept"
+          print("PASS: New concept selection works")
+          print("PASS: Resume script did not modify state")
+          PY
+
+
+      - name: Test unfinished lesson memory
+        shell: bash
+        run: |
+          set -euo pipefail
+          export HOME="$RUNNER_TEMP/unfinished-test"
+
+          # Initialize learner memory
+          python synapse/scripts/init_state.py machine-learning
+
+          # Save an unfinished lesson
+          python synapse/scripts/set_current_concept.py \
+            machine-learning backpropagation
+
+          # Verify state and resumption
+          python - <<'PY'
+          import json
+          import subprocess
+          import sys
+          from pathlib import Path
+
+          path = Path.home() / "notes/machine-learning/.synapse/state.json"
+          state = json.loads(path.read_text())
+
+          assert state["current_concept_id"] == "backpropagation"
+          assert state["last_session_at"] is not None
+          assert state["concepts"] == {}
+
+          print("PASS: Unfinished lesson saved")
+
+          result = subprocess.run(
+              [sys.executable, "synapse/scripts/resume_state.py",
+               "machine-learning"],
+              capture_output=True,
+              text=True,
+              check=True
+          )
+
+          resumed = json.loads(result.stdout)
+
+          assert resumed["next_action"] == "continue"
+          assert resumed["current_concept"] == "backpropagation"
+
+          print("PASS: Unfinished lesson resumed")
+          print("PASS: No artificial mastery awarded")
+          PY
+
+
+      - name: Test spaced repetition scheduling
+        shell: bash
+        run: |
+          set -euo pipefail
+          export HOME="$RUNNER_TEMP/scheduler-test"
+
+          python synapse/scripts/init_state.py machine-learning
+
+          python synapse/scripts/update_mastery.py \
+            machine-learning chain-rule \
+            --kind guided --result success \
+            --task-id review-001 --note "Guided success"
+
+          python - <<'PY'
+          import json
+          from datetime import datetime, timedelta, timezone
+          from pathlib import Path
+
+          path = Path.home() / "notes/machine-learning/.synapse/state.json"
+          state = json.loads(path.read_text())
+          record = state["concepts"]["chain-rule"]
+
+          today = datetime.now(timezone.utc).date()
+          expected = (today + timedelta(days=3)).isoformat()
+
+          assert record["mastery"] == 2
+          assert record["next_review_at"] == expected
+          assert state["review_queue"] == [
+              {"concept_id": "chain-rule", "due_at": expected}
+          ]
+          print("PASS: M2 review scheduled after 3 days")
+          PY
+
+          python synapse/scripts/update_mastery.py \
+            machine-learning chain-rule \
+            --kind independent --result failure \
+            --task-id review-002 --note "Incorrect solution"
+
+          python - <<'PY'
+          import json
+          from datetime import datetime, timedelta, timezone
+          from pathlib import Path
+
+          path = Path.home() / "notes/machine-learning/.synapse/state.json"
+          state = json.loads(path.read_text())
+          record = state["concepts"]["chain-rule"]
+
+          expected = (
+              datetime.now(timezone.utc).date()
+              + timedelta(days=1)
+          ).isoformat()
+
+          assert record["next_review_at"] == expected
+          assert len(state["review_queue"]) == 1
+          assert state["review_queue"][0]["due_at"] == expected
+          assert record["attempts"] == 2
+
+          print("PASS: Failed assessment scheduled after 1 day")
+          print("PASS: No duplicate review entries")
+          PY
+
+
+      - name: Test adaptive retention scheduling
+        shell: bash
+        run: |
+          set -euo pipefail
+          export HOME="$RUNNER_TEMP/retention-test"
+
+          python synapse/scripts/init_state.py machine-learning
+
+          # First successful study session
+          python synapse/scripts/update_mastery.py \
+            machine-learning chain-rule \
+            --kind guided --result success \
+            --task-id adaptive-001 --note "First success"
+
+          # Simulate the first session occurring yesterday
+          python - <<'PY'
+          import json
+          from datetime import datetime, timedelta, timezone
+          from pathlib import Path
+
+          path = Path.home() / "notes/machine-learning/.synapse/state.json"
+          state = json.loads(path.read_text())
+          record = state["concepts"]["chain-rule"]
+
+          yesterday = (
+              datetime.now(timezone.utc).date()
+              - timedelta(days=1)
+          ).isoformat()
+
+          record["evidence"][0]["date"] = yesterday
+          path.write_text(json.dumps(state), encoding="utf-8")
+          PY
+
+          # Second successful session on a different day
+          python synapse/scripts/update_mastery.py \
+            machine-learning chain-rule \
+            --kind guided --result success \
+            --task-id adaptive-002 --note "Second success"
+
+          python - <<'PY'
+          import json
+          from datetime import datetime, timedelta, timezone
+          from pathlib import Path
+
+          path = Path.home() / "notes/machine-learning/.synapse/state.json"
+          state = json.loads(path.read_text())
+          record = state["concepts"]["chain-rule"]
+
+          expected = (
+              datetime.now(timezone.utc).date()
+              + timedelta(days=6)
+          ).isoformat()
+
+          assert record["mastery"] == 2
+          assert record["retention_streak"] == 2
+          assert record["next_review_at"] == expected
+
+          print("PASS: Two successful dates produce 6-day interval")
+          PY
+
+          # A failure should reset the streak
+          python synapse/scripts/update_mastery.py \
+            machine-learning chain-rule \
+            --kind independent --result failure \
+            --task-id adaptive-003 --note "Incorrect answer"
+
+          python - <<'PY'
+          import json
+          from datetime import datetime, timedelta, timezone
+          from pathlib import Path
+
+          path = Path.home() / "notes/machine-learning/.synapse/state.json"
+          record = json.loads(path.read_text())["concepts"]["chain-rule"]
+
+          expected = (
+              datetime.now(timezone.utc).date()
+              + timedelta(days=1)
+          ).isoformat()
+
+          assert record["retention_streak"] == 0
+          assert record["next_review_at"] == expected
+
+          print("PASS: Failure resets retention streak")
+          print("PASS: Review rescheduled after 1 day")
+          PY
+
