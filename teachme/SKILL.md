@@ -15,7 +15,7 @@ Do NOT dump everything in a single wall of chat text. Write clean, pure Markdown
 
 1. **Central Vault Only:** Always write all generated files to `~/notes/<topic-slug>/` (expanding `~` to the user's home directory), regardless of which workspace is currently open. Never scatter notes inside random project folders.
 2. **Always Start with Frontier Grilling:** Every new `/teachme <topic>` session MUST begin with Phase 1 (Frontier Grilling Round with `❓` questions and `➡️` defaults) before running research—unless the user explicitly passes `--auto` or replies `"auto"` / `"defaults"`.
-3. **Pure Markdown Output:** Produce 100% pure Markdown (`.md`) files across the entire vault (no HTML wrappers, no PDFs). Keep formatting clean for Obsidian, Git, and standard Markdown viewers.
+3. **Markdown Notes & Persistent Learning State:** Keep all human-readable study notes in pure Markdown (`.md`) for compatibility with Obsidian and Git. Permit one machine-readable JSON file at `~/notes/<topic-slug>/.synapse/state.json` to store learner progress, mastery levels, assessment evidence, misconceptions, current position, and review schedules. Create the state file only when filesystem access is available. Never overwrite existing learning state without reading and preserving prior progress. Do not store passwords, credentials, or unnecessary personal information.
 4. **Never Trust Parametric Knowledge Alone:** Treat pre-trained knowledge as untrusted until grounded in primary sources during Phase 2.
 5. **Progressive Reference Loading:** Read the supporting reference files in `references/` at the exact phase or subcommand they govern so instructions stay crisp and complete:
    - Phase 1: `references/MISSION-AND-GRILL.md`
